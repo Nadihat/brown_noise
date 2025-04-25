@@ -1,9 +1,7 @@
 use clap::Parser;
 use hound::{SampleFormat, WavSpec, WavWriter};
-use rand::distributions::{Distribution, Normal};
-use std::f32::consts::PI;
-use std::fs::File;
-use std::io::BufWriter;
+use rand::distributions::Distribution;
+use rand_distr::Normal;
 use std::path::PathBuf;
 
 /// Brown noise generator
@@ -94,7 +92,7 @@ fn generate_brown_noise(output_path: &PathBuf, duration: f32, sample_rate: u32, 
 /// Verify the spectral characteristics of the generated noise
 /// This function is not called in the main program but can be used for testing
 #[allow(dead_code)]
-fn verify_spectral_characteristics(samples: &[f32], sample_rate: u32) -> bool {
+fn verify_spectral_characteristics(_samples: &[f32], _sample_rate: u32) -> bool {
     // Perform FFT and check if power decreases at 6 dB per octave
     // This would require an FFT library, which we're not including for simplicity
     // In a real implementation, you would use rustfft or similar
