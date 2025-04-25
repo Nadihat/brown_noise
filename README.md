@@ -74,4 +74,4 @@ This generator creates brown noise using a leaky integrator applied to white noi
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the Unlicense License - see the LICENSE file for details.
