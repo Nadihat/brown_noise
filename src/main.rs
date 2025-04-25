@@ -60,7 +60,7 @@ fn generate_brown_noise(output_path: &PathBuf, duration: f32, sample_rate: u32, 
     // where x[n] is white noise and alpha is close to 1
     
     // Create normal distribution for white noise
-    let normal = Normal::new(0.0, 1.0);
+    let normal = Normal::new(0.0, 1.0).expect("Failed to create normal distribution");
     let mut rng = rand::thread_rng();
     
     // Leaky integrator coefficient (close to 1 for brown noise)
