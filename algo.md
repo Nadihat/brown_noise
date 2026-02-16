@@ -54,3 +54,19 @@ The Rust implementation (`src/main.rs`) replicates this behavior by:
     *   It applies the difference equation: $y[n] = b_0 x[n] + b_1 x[n-1] + b_2 x[n-2] - a_1 y[n-1] - a_2 y[n-2]$.
 
 This ensures the Rust output spectrally matches the browser implementation when the multiplier is adjusted.
+
+## Deviations from Reference (script.js)
+
+While the core generation and filtering are identical, the signal chain differs slightly at the final output stage:
+
+1.  **Limiter / Soft-Clipper:**
+    *   **script.js:** Uses a `WaveShaperNode` with a `tanh` curve (`Math.tanh(x*2)`) *after* the gain stage to soft-clip peaks. This adds harmonic distortion when the signal is loud and prevents harsh digital clipping.
+    *   **Rust:** Uses hard clamping (`output.clamp(-1.0, 1.0)`). If the generated brown noise (which is stochastic) exceeds ±1.0 after amplification, it is hard-clipped.
+
+2.  **Gain Staging:**
+    *   **script.js:** The browser implementation has a `MAX_SAFE_GAIN` of 0.9 applied to the master gain.
+    *   **Rust:** The `amplitude` argument is applied directly as a linear multiplier before clamping.
+
+3.  **Buffer Loop vs Streaming:**
+    *   **script.js:** Generates a static 6-second buffer and loops it.
+    *   **Rust:** Generates fresh random samples for the entire duration requested. This is generally superior for long files as it avoids audible loop points.
