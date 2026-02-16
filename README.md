@@ -45,6 +45,9 @@ The compiled binary will be available at `./target/release/brown_noise_generator
 
 # Specify output file, duration, sample rate, and amplitude
 ./target/release/brown_noise_generator -o my_noise.wav -d 60 -s 48000 -a 0.7
+
+# Use the multiplier to adjust brightness (LPF cutoff)
+./target/release/brown_noise_generator -m 5.0
 ```
 
 ### Command-Line Options
@@ -53,16 +56,17 @@ The compiled binary will be available at `./target/release/brown_noise_generator
 - `-d, --duration <SECONDS>`: Duration in seconds (default: 10.0)
 - `-s, --sample-rate <RATE>`: Sample rate in Hz (default: 44100)
 - `-a, --amplitude <LEVEL>`: Amplitude between 0.0 and 1.0 (default: 0.5)
+- `-m, --multiplier <VALUE>`: Brightness control/Low-pass filter cutoff (1.0 to 35.0, default: 1.0)
 
 ## How It Works
 
-This generator creates brown noise using a leaky integrator applied to white noise:
+This generator creates brown noise using a leaky integrator applied to white noise, followed by a shaping filter:
 
-1. Generate white noise samples from a normal distribution
-2. Apply a leaky integrator: `y[n] = alpha * y[n-1] + (1-alpha) * x[n]`
-   - Where `x[n]` is white noise and `alpha` is close to 1 (0.99 in this implementation)
-3. Normalize the output to prevent clipping
-4. Save as a 16-bit WAV file
+1. Generate white noise samples from a uniform distribution.
+2. Apply a leaky integrator to shape the spectrum towards 1/f^2 (Brown noise).
+3. Apply a dynamic Low Pass Filter (Biquad, Q=1) controlled by the `multiplier` argument to adjust "brightness".
+4. Normalize the output to prevent clipping.
+5. Save as a 16-bit WAV file.
 
 ## Use Cases
 
