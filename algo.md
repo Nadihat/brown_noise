@@ -43,3 +43,14 @@ True brown noise is a random walk (perfect integration), where $\alpha = 1$. How
 
 ## Conclusion
 The algorithm is a **Leaky Integrator**. It is a standard approximation for Brown noise in audio synthesis because it is computationally cheap and numerically stable (prevents infinite drift). It sounds "brown" enough for most relaxation purposes, though it technically lacks the extreme low-end power of mathematical Brownian motion.
+
+## Multiplier & Low Pass Filter
+In `script.js`, a "multiplier" slider adjusts the brightness of the noise. This is implemented via a dynamic Low Pass Filter (LPF) using the Web Audio API's `BiquadFilterNode` (type: 'lowpass', Q: 1).
+
+The Rust implementation (`src/main.rs`) replicates this behavior by:
+1.  **Mapping Multiplier to Frequency:** It uses the same exponential mapping logic to convert the multiplier (1.0 - 35.0) into a cutoff frequency (Hz).
+2.  **Digital Biquad Implementation:** It implements a standard digital Biquad filter (Direct Form I) manually.
+    *   It calculates the coefficients ($b_0, b_1, b_2, a_0, a_1, a_2$) using the Audio EQ Cookbook formulas for a Lowpass filter with Q=1.
+    *   It applies the difference equation: $y[n] = b_0 x[n] + b_1 x[n-1] + b_2 x[n-2] - a_1 y[n-1] - a_2 y[n-2]$.
+
+This ensures the Rust output spectrally matches the browser implementation when the multiplier is adjusted.
