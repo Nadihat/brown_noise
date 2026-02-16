@@ -54,34 +54,30 @@ fn generate_brown_noise(output_path: &PathBuf, duration: f32, sample_rate: u32, 
     
     let mut writer = WavWriter::create(output_path, spec).unwrap();
     
-    // Brown noise generation
-    // We use a leaky integrator on white noise to create brown noise
-    // y[n] = alpha * y[n-1] + (1-alpha) * x[n]
-    // where x[n] is white noise and alpha is close to 1
+    // Brown noise generation based on script.js
+    // last = (last + 0.02 * white) / 1.02
+    // output = last * 3.5
     
-    // Create normal distribution for white noise
-    let normal = Normal::new(0.0, 1.0).expect("Failed to create normal distribution");
+    // Create uniform distribution for white noise (-1.0 to 1.0)
+    // script.js uses Math.random() * 2 - 1
+    let uniform = rand::distributions::Uniform::new_inclusive(-1.0, 1.0);
     let mut rng = rand::thread_rng();
     
-    // Leaky integrator coefficient (close to 1 for brown noise)
-    let alpha = 0.99;
-    
     // Initial value
-    let mut y_prev = 0.0;
-    
-    // Normalization factor to prevent clipping
-    let normalization = amplitude * 0.15; // Brown noise needs more normalization
+    let mut last = 0.0;
     
     for _ in 0..num_samples {
         // Generate white noise sample
-        let white_sample = normal.sample(&mut rng) as f32;
+        let white: f32 = uniform.sample(&mut rng);
         
-        // Apply leaky integrator to get brown noise
-        y_prev = alpha * y_prev + (1.0 - alpha) * white_sample;
+        // Apply leaky integrator algorithm from script.js
+        last = (last + 0.02 * white) / 1.02;
         
-        // Normalize and convert to i16
-        let normalized_sample = y_prev * normalization;
-        let sample = (normalized_sample * i16::MAX as f32) as i16;
+        // Apply 3.5 multiplier from script.js and user amplitude
+        let output = last * 3.5 * amplitude;
+        
+        // Clamp and convert to i16
+        let sample = (output.clamp(-1.0, 1.0) * i16::MAX as f32) as i16;
         
         writer.write_sample(sample).unwrap();
     }
